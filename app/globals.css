@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a0605;
+  --bg2: #140a06;
+  --ember: #ff6a1a;
+  --ember2: #ff3d00;
+  --ember-soft: #ffab5e;
+  --fg: #f5ede6;
+  --fg-muted: rgba(245,237,230,0.55);
+  --fg-dim: rgba(245,237,230,0.28);
+  --card: rgba(24,15,10,0.92);
+  --card-border: rgba(255,106,26,0.28);
+  --input-bg: rgba(255,255,255,0.04);
+  --input-border: rgba(255,106,26,0.18);
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, 'Inter', sans-serif;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+input, textarea, select {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  color: var(--fg);
+  outline: none;
+  font-family: inherit;
+}
+input:focus, textarea:focus { border-color: rgba(255,106,26,0.5); }
+input::placeholder, textarea::placeholder { color: var(--fg-dim); }
+button { cursor: pointer; font-family: inherit; }
+
+@keyframes pulse-ember {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,61,0,0.5); }
+  50%       { box-shadow: 0 0 0 10px rgba(255,61,0,0); }
+}
