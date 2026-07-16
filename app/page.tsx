@@ -5,6 +5,8 @@ import { useWakeWord } from "./wakeword";
 import { NotesTab } from "./notes-tab";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://proti.ai";
+const FIELD_KEY = process.env.NEXT_PUBLIC_FIELD_KEY || "";
+const fieldHeaders = { "X-Field-Key": FIELD_KEY, "Content-Type": "application/json" };
 
 interface Investigation {
   id: number;
@@ -92,7 +94,7 @@ export default function FieldApp(){
   const loadCases=useCallback(async()=>{
     setLoading(true);
     try{
-      const r=await fetch(`${API}/api/field/cases?limit=50`);
+      const r=await fetch(`${API}/api/field/cases?limit=50`,{headers:fieldHeaders});
       const d=await r.json();
       setCases(d.cases||[]);
     }catch(e){ console.error(e); }
@@ -102,7 +104,7 @@ export default function FieldApp(){
   // Load team GPS
   const loadTeam=useCallback(async()=>{
     try{
-      const r=await fetch(`${API}/api/field/team`);
+      const r=await fetch(`${API}/api/field/team`,{headers:fieldHeaders});
       const d=await r.json();
       setTeam(d.investigators||[]);
     }catch(e){ console.error(e); }
@@ -111,7 +113,7 @@ export default function FieldApp(){
   // Load notes for current case
   const loadNotes=useCallback(async(id:number)=>{
     try{
-      const r=await fetch(`${API}/api/field/cases/${id}`);
+      const r=await fetch(`${API}/api/field/cases/${id}`,{headers:fieldHeaders});
       const d=await r.json();
       setNotes(d.notes||[]);
     }catch(e){ console.error(e); }
@@ -125,7 +127,7 @@ export default function FieldApp(){
 
   const saveNote=async(text:string)=>{
     if(!text.trim()||!cur)return;
-    await fetch(`${API}/api/field/cases/${cur.id}/notes`,{
+    await fetch(`${API}/api/field/cases/${cur.id}/notes`,{headers:{"X-Field-Key":FIELD_KEY,"Content-Type":"application/json"},
       method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({content:text,author:"Field Investigator"}),
     });
