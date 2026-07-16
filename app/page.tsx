@@ -91,13 +91,21 @@ export default function FieldApp(){
   const [pass,setPass]=useState("");
 
   // Load cases from API
+  const [error,setError]=useState("");
+
   const loadCases=useCallback(async()=>{
     setLoading(true);
+    setError("");
     try{
       const r=await fetch(`${API}/api/field/cases?limit=50`,{headers:fieldHeaders});
+      if(!r.ok){ setError(`HTTP ${r.status}: ${await r.text()}`); return; }
       const d=await r.json();
       setCases(d.cases||[]);
-    }catch(e){ console.error(e); }
+      if((d.cases||[]).length===0) setError("API returned 0 cases");
+    }catch(e:any){
+      setError(`Fetch error: ${e.message} — API: ${API}`);
+      console.error(e);
+    }
     finally{ setLoading(false); }
   },[]);
 
@@ -216,7 +224,8 @@ export default function FieldApp(){
             </div>
           );
         })}
-        {!loading&&filtered.length===0&&<div style={{padding:32,textAlign:"center",color:C.dim,fontSize:13}}>No cases found.</div>}
+        {error&&<div style={{padding:16,margin:12,background:"rgba(255,61,0,0.1)",border:"1px solid rgba(255,61,0,0.3)",borderRadius:8,fontSize:11,color:"#ff6a1a",wordBreak:"break-all"}}>{error}</div>}
+        {!loading&&filtered.length===0&&!error&&<div style={{padding:32,textAlign:"center",color:C.dim,fontSize:13}}>No cases found.</div>}
       </div>
     </div>
   );
