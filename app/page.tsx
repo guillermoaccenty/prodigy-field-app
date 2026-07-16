@@ -5,7 +5,7 @@ import { useWakeWord } from "./wakeword";
 import { NotesTab } from "./notes-tab";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://proti.ai";
-const FIELD_KEY = process.env.NEXT_PUBLIC_FIELD_KEY || "";
+const FIELD_KEY = process.env.NEXT_PUBLIC_FIELD_KEY || "zdif_omtfb61gvNJWpyMU_t1J8ZpcIzHcTPydpHW_5s";
 const fieldHeaders = { "X-Field-Key": FIELD_KEY, "Content-Type": "application/json" };
 
 interface Investigation {
