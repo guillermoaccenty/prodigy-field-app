@@ -1,6 +1,8 @@
 "use client";
 import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
+import { useWakeWord } from "./wakeword";
+import { NotesTab } from "./notes-tab";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://proti.ai";
 
@@ -53,13 +55,10 @@ export default function FieldApp(){
   const [loading,setLoading]=useState(false);
   const [noteModal,setNoteModal]=useState(false);
   const [noteText,setNoteText]=useState("");
-  const [recording,setRecording]=useState(false);
-  const [draft,setDraft]=useState("");
   const [searchQ,setSearchQ]=useState("");
   const [loginLoading,setLoginLoading]=useState(false);
   const [user,setUser]=useState("");
   const [pass,setPass]=useState("");
-  const recRef=useRef<any>(null);
 
   // Load cases from API
   const loadCases=useCallback(async()=>{
@@ -326,33 +325,7 @@ export default function FieldApp(){
         </div>}
 
         {/* NOTES */}
-        {tab==="notes"&&<div style={{flex:1,display:"flex",flexDirection:"column"}}>
-          <div style={{flex:1,overflowY:"auto" as const,background:C.bg}}>
-            {notes.length===0?<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:100,color:C.dim,fontSize:13}}>No notes yet. Tap + to add one.</div>
-              :notes.map((n,i)=>(
-                <div key={i} style={{background:C.bg,borderBottom:`1px solid rgba(255,106,26,0.07)`,padding:"13px 16px"}}>
-                  <div style={{fontSize:13,fontWeight:500,color:C.fg,marginBottom:5,lineHeight:1.5}}>{n.content}</div>
-                  <div style={{display:"flex",justifyContent:"space-between"}}>
-                    <span style={{fontSize:11,color:C.dim}}>{new Date(n.created_at).toLocaleString()}</span>
-                    <span style={{fontSize:11,color:C.soft}}>{n.author_name}</span>
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-          <div style={{background:C.bg2,borderTop:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-            <button onClick={toggleMic} style={{width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#ff6a1a,#ff3d00)",border:"none",color:"white",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer",boxShadow:"0 2px 14px rgba(255,61,0,0.3)"}}>
-              {recording?"⏹":"🎤"}
-            </button>
-            <div style={{flex:1,fontSize:12,color:C.muted,background:"rgba(255,255,255,0.04)",border:`1px solid rgba(255,106,26,0.18)`,borderRadius:8,padding:"8px 11px",minHeight:36,lineHeight:1.4}}>
-              {draft||(recording?"Listening...":"Tap mic to dictate a field note...")}
-            </div>
-            <button disabled={!draft.trim()} onClick={()=>{saveNote(draft);setDraft("");recRef.current?.stop();setRecording(false);}}
-              style={{background:draft.trim()?"linear-gradient(135deg,#ff6a1a,#ff3d00)":"rgba(255,255,255,0.07)",color:draft.trim()?"white":C.dim,border:"none",borderRadius:8,padding:"8px 12px",fontSize:12,fontWeight:700 as const,flexShrink:0,cursor:draft.trim()?"pointer":"default"}}>
-              Save
-            </button>
-          </div>
-        </div>}
+        {tab==="notes"&&<NotesTab notes={notes} onSave={saveNote}/>}
 
         {/* LOCATION */}
         {tab==="location"&&<div style={{flex:1,display:"flex",flexDirection:"column"}}>
