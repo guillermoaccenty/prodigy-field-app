@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { useWakeWord } from "./wakeword";
 import { NotesTab } from "./notes-tab";
@@ -132,21 +132,9 @@ export default function FieldApp(){
     loadNotes(cur.id);
   };
 
-  const toggleMic=useCallback(()=>{
-    const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-    if(!SR){alert("Usa Chrome para notas de voz");return;}
-    if(recording){recRef.current?.stop();setRecording(false);}
-    else{
-      const r=new SR();r.lang="en-US";r.continuous=true;r.interimResults=true;
-      let fin="";
-      r.onresult=(e:any)=>{let int="";for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fin+=e.results[i][0].transcript;else int+=e.results[i][0].transcript;}setDraft(fin+int);};
-      r.onerror=()=>setRecording(false);
-      r.start();recRef.current=r;setRecording(true);setDraft("");
-    }
-  },[recording]);
 
   const filtered=cases.filter(c=>{
-    if(searchQ&&!c.subject_name.toLowerCase().includes(searchQ.toLowerCase()))return false;
+    if(searchQ&&!(c.subject_name||'').toLowerCase().includes(searchQ.toLowerCase()))return false;
     return true;
   });
 
