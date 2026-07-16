@@ -7,11 +7,39 @@ import { NotesTab } from "./notes-tab";
 const API = process.env.NEXT_PUBLIC_API_URL || "https://proti.ai";
 
 interface Investigation {
-  id: number; subject_name: string; status: string; priority: string;
-  created_at: string; subject_dob: string|null; subject_gender: string;
-  subject_race: string; subject_phones: string[]|null;
-  subject_addresses: string[]|null; investigator_id: number|null;
-  photo_path: string|null; extra_metadata: any;
+  id: number;
+  claim_number: string|null;
+  case_number: string|null;
+  document_type: string|null;
+  status: string;
+  case_type: string|null;
+  date_of_injury: string|null;
+  date_assigned: string|null;
+  due_date_original: string|null;
+  assignment_days: number|null;
+  assignment_desc: string|null;
+  employer: string|null;
+  insurance_carrier: string|null;
+  claims_administrator: string|null;
+  case_region: string|null;
+  services_requested: string|null;
+  is_reopen: boolean;
+  ingested_at: string|null;
+  subject_name: string|null;
+  subject_dob: string|null;
+  subject_sex: string|null;
+  subject_race: string|null;
+  subject_address: string|null;
+  subject_height: string|null;
+  subject_weight: string|null;
+  subject_hair: string|null;
+  subject_eyes: string|null;
+  client_name: string|null;
+  adjuster_name: string|null;
+  adjuster_phone: string|null;
+  adjuster_email: string|null;
+  assigned_investigators: string|null;
+  photo_path: string|null;
 }
 interface Note { id:number; author_name:string; content:string; created_at:string; }
 interface TeamMember { investigator_id:number; investigator_name:string; lat:number; lng:number; battery_pct:number|null; heading_deg:number|null; is_active:boolean; recorded_at:string; ws_connected:boolean; }
@@ -191,7 +219,7 @@ export default function FieldApp(){
               </div>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:15,fontWeight:600,color:C.fg}}>{c.subject_name}</div>
-                <div style={{fontSize:11,color:C.muted,marginTop:2}}>#{c.id} · {fmtDate(c.created_at)}</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:2}}>{c.claim_number||`#${c.id}`} · {fmtDate(c.date_assigned||c.ingested_at)}</div>
                 <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:8,marginTop:4,display:"inline-block",...sc}}>{c.status}</span>
               </div>
               <button style={{border:`1px solid ${C.border}`,borderRadius:20,padding:"5px 13px",fontSize:11,fontWeight:700,color:C.soft,background:"rgba(255,106,26,0.07)",cursor:"pointer"}} onClick={e=>{e.stopPropagation();openCase(c);}}>OPEN</button>
@@ -269,8 +297,8 @@ export default function FieldApp(){
 
   // ── CASE DETAIL ──────────────────────────────────────────────────────────
   const c=cur!;
-  const addr=fmtAddr(c.subject_addresses);
-  const phone1=fmtPhone(c.subject_phones);
+  const addr=c.subject_address||"Unknown";
+  const phone1=c.adjuster_phone||"—";
 
   return(
     <div style={phone}>
@@ -291,36 +319,46 @@ export default function FieldApp(){
             </div>
             <div style={{flex:1}}>
               <div style={{fontSize:17,fontWeight:700,color:C.fg}}>{c.subject_name}</div>
-              <div style={{fontSize:12,color:C.muted,marginTop:3}}>Case #{c.id}</div>
-              <div style={{fontSize:12,color:C.muted,marginTop:2}}>DOB: {fmtDate(c.subject_dob)}</div>
+              <div style={{fontSize:12,color:C.muted,marginTop:3}}>{c.claim_number||`Case #${c.id}`}</div>
+              <div style={{fontSize:12,color:C.muted,marginTop:2}}>DOB: {fmtDate(c.subject_dob)} · {c.subject_sex||"?"}</div>
               <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:8,marginTop:6,display:"inline-block",...statusColor(c.status)}}>{c.status}</span>
             </div>
           </div>
-          {/* Subject info */}
+          {/* Client card */}
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,margin:"8px 12px",overflow:"hidden"}}>
+            <div style={{padding:"9px 13px",background:"rgba(255,106,26,0.07)",borderBottom:`1px solid rgba(255,106,26,0.12)`,fontSize:12,fontWeight:700,color:C.soft}}>Client Information</div>
+            <DataRow label="Client" val={c.client_name||"—"} ember/>
+            <DataRow label="Adjuster" val={c.adjuster_name||"—"} ember/>
+            {c.adjuster_phone&&<DataRow label="Adj. Phone" val={c.adjuster_phone} ember/>}
+            {c.adjuster_email&&<DataRow label="Adj. Email" val={c.adjuster_email}/>}
+            {c.claims_administrator&&<DataRow label="Claims Admin" val={c.claims_administrator}/>}
+          </div>
+          {/* Case detail */}
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,margin:"8px 12px",overflow:"hidden"}}>
+            <div style={{padding:"9px 13px",background:"rgba(255,106,26,0.07)",borderBottom:`1px solid rgba(255,106,26,0.12)`,fontSize:12,fontWeight:700,color:C.soft}}>Case Detail</div>
+            <DataRow label="Claim #" val={c.claim_number||"—"}/>
+            <DataRow label="Case Type" val={c.case_type||c.document_type||"—"}/>
+            <DataRow label="Date Assigned" val={fmtDate(c.date_assigned)}/>
+            <DataRow label="Due Date" val={fmtDate(c.due_date_original)}/>
+            <DataRow label="Assignment" val={c.assignment_desc||`${c.assignment_days||"?"}-Day Surveillance`}/>
+            {c.employer&&<DataRow label="Employer" val={c.employer}/>}
+            <DataRow label="Date of Injury" val={fmtDate(c.date_of_injury)}/>
+            {c.insurance_carrier&&<DataRow label="Insurance" val={c.insurance_carrier}/>}
+            {c.case_region&&<DataRow label="Region" val={c.case_region}/>}
+            {c.assigned_investigators&&<DataRow label="Investigators" val={c.assigned_investigators}/>}
+            {c.is_reopen&&<DataRow label="Re-open" val="Yes"/>}
+          </div>
+          {/* Subject detail */}
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,margin:"8px 12px",overflow:"hidden"}}>
             <div style={{padding:"9px 13px",background:"rgba(255,106,26,0.07)",borderBottom:`1px solid rgba(255,106,26,0.12)`,fontSize:12,fontWeight:700,color:C.soft}}>Subject Information</div>
-            <DataRow label="Phone" val={phone1} ember/>
             <DataRow label="DOB" val={fmtDate(c.subject_dob)}/>
-            <DataRow label="Gender" val={c.subject_gender||"—"}/>
-            <DataRow label="Race" val={c.subject_race||"—"}/>
+            <DataRow label="Sex / Race" val={`${c.subject_sex||"—"} / ${c.subject_race||"—"}`}/>
+            {c.subject_height&&<DataRow label="Height" val={c.subject_height}/>}
+            {c.subject_weight&&<DataRow label="Weight" val={c.subject_weight}/>}
+            {c.subject_hair&&<DataRow label="Hair" val={c.subject_hair}/>}
+            {c.subject_eyes&&<DataRow label="Eyes" val={c.subject_eyes}/>}
             <DataRow label="Address" val={addr}/>
           </div>
-          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,margin:"8px 12px",overflow:"hidden"}}>
-            <div style={{padding:"9px 13px",background:"rgba(255,106,26,0.07)",borderBottom:`1px solid rgba(255,106,26,0.12)`,fontSize:12,fontWeight:700,color:C.soft}}>Investigation</div>
-            <DataRow label="Case ID" val={`#${c.id}`}/>
-            <DataRow label="Priority" val={c.priority}/>
-            <DataRow label="Created" val={fmtDate(c.created_at)}/>
-            {c.extra_metadata?.tier1_findings&&<DataRow label="Findings" val={String(c.extra_metadata.tier1_findings)}/>}
-          </div>
-          {/* All addresses */}
-          {c.subject_addresses&&c.subject_addresses.length>1&&(
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,margin:"8px 12px",overflow:"hidden",marginBottom:20}}>
-              <div style={{padding:"9px 13px",background:"rgba(255,106,26,0.07)",borderBottom:`1px solid rgba(255,106,26,0.12)`,fontSize:12,fontWeight:700,color:C.soft}}>Known Addresses</div>
-              {c.subject_addresses.slice(0,5).map((a,i)=>(
-                <div key={i} style={{padding:"7px 13px",borderBottom:i<4?`1px solid rgba(255,255,255,0.04)`:"none",fontSize:12,color:C.fg}}>{a}</div>
-              ))}
-            </div>
-          )}
           <div style={{height:20}}/>
         </div>}
 
